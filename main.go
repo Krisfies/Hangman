@@ -20,6 +20,7 @@ type Hangman struct {
 func main() {
 	var h1 Hangman
 	h1.attempt = 10
+	Rules()
 	h1.ReadFile()
 	h1.CreateHidden()
 	h1.Reveal()
@@ -29,6 +30,17 @@ func main() {
 		h1.IsLoose()
 		h1.PlayerTurn()
 	}
+}
+
+func Rules() {
+	fmt.Println("Bienvenue sur le meilleur jeu du pendu du monde.")
+	fmt.Println("Voici les règles:\n")
+	fmt.Println("Dans ce jeu, le but est de deviner un mot choisis par l'ordinateur.")
+	fmt.Println("Pour cela tu écris une lettre et l'ordinateur te dis si elle est présente dans le mot.")
+	fmt.Println("Tu peux même écrire un mot en entier si tu penses avoir trouvé.")
+	fmt.Println("Mais fait attention car chaque erreur rapprochera José le bonhomme un peu plus de son dernier souffle.")
+	fmt.Println("Bonne chance, et puisse la chance te sourire (mais surtout à José).\n")
+
 }
 
 func (h *Hangman) ReadFile() {
@@ -91,6 +103,7 @@ func (h *Hangman) HangmanPositions() {
 
 func (h *Hangman) PlayerTurn() {
 	var s string
+	IsTried := false
 	found := false
 	fmt.Println("Voici le mot à deviner :",h.hiddenWord)
 	if h.attempt > 1 {
@@ -116,18 +129,41 @@ func (h *Hangman) PlayerTurn() {
 			h.attempt -= 1
 		}
 	} else {
-		for i, letter := range h.word {
-			if s == string(letter) {
-				h.hiddenWord[i] = string(letter) 
-				found = true
+		for _, word := range h.tried {
+			if s == word {
+				fmt.Println("Vous avez déjà essayé cette lettre, tentez autre chose:")
+				IsTried = true
+				fmt.Scanln(&s)
+				h.tried = append(h.tried, s)
+				h.attempt -= 1
 			}
 		}
-		if !found {
-			fmt.Println("Votre lettre n'est pas présente dans le mot.")
-			h.tried = append(h.tried, s)
-			h.attempt -= 1
-		} else {
-			fmt.Println("Bravo, vous avez deviné une lettre !")
+		if !IsTried {
+			for i, letter := range h.word {
+				if s == string(letter) {
+					h.hiddenWord[i] = string(letter) 
+					found = true
+				}
+			}
+			if !found {
+				fmt.Println("Votre lettre n'est pas présente dans le mot.")
+				h.tried = append(h.tried, s)
+				h.attempt -= 1
+			} else {
+				h.tried = append(h.tried, s)
+				fmt.Println("Bravo, vous avez deviné une lettre !")
+			}
+		}
+	}
+}
+
+func (h *Hangman) IsTried(s string) {
+	for _, word := range h.tried {
+		if s == word {
+			fmt.Println("Vous avez déjà essayé ", word)
+			fmt.Println("Entrez un mot ou une lettre.")
+			fmt.Scanln(&s)
+			break
 		}
 	}
 }
@@ -144,7 +180,7 @@ func (h *Hangman) IsWin() {
 		}
 	}
 	if match {
-		fmt.Println("Bravo, tu as gagnés ! le mot était bel est bien", h.word)
+		fmt.Println("Bravo, tu as gagnés ! Le mot était bel est bien", h.word)
 		os.Exit(0)
 	}
 }
